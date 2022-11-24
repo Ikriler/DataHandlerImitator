@@ -31,6 +31,7 @@ private:
     void SendToServer(QString str);
     qint16 nextBlockSize;
     void writeMessage(QString str);
+    void disconnectMessage();
 
 public slots:
     void slotReadyRead();

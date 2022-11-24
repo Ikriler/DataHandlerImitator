@@ -11,21 +11,45 @@ Server::Server(Ui::MainWindow *ui)
     }
     nextBlockSize = 0;
     this->ui = ui;
+
 }
 
 void Server::incomingConnection(qintptr socketDescriptor) {
     socket = new QTcpSocket;
     socket->setSocketDescriptor(socketDescriptor);
     connect(socket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
+    connect(socket, &QTcpSocket::disconnected, this, &Server::disconnected);
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+
+    QString str = socket->peerAddress().toString().replace("::ffff:", "");
+
+    QList<QListWidgetItem *> items = ui->listWidget->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard);
+    QList<QString> texts;
+    foreach(QListWidgetItem *item, items)
+      texts.append(item->text());
+
+    if(!texts.contains(str)) {
+        writeMessage("Попытка подключения неизвестного устройства: " + str);
+        socket->disconnect();
+        return;
+    }
 
     sockets.push_back(socket);
 
-    QString str;
-
-    str = socket->peerName();
-    ui->textBrowser->append(str + " connected");
+    writeMessage(str + " подключён");
+    updateListView();
 }
+
+void Server::disconnected() {
+    QString str;
+    QTcpSocket *disconnectedSocket = qobject_cast<QTcpSocket *>(sender());
+    sockets.removeAll(disconnectedSocket);
+    str = disconnectedSocket->peerAddress().toString().replace("::ffff:", "");
+    writeMessage(str + " отключён");
+    updateListView();
+}
+
+
 
 void Server::writeMessage(QString str) {
     QDateTime dateTime = QDateTime::currentDateTime();
@@ -37,11 +61,6 @@ void Server::slotReadyRead() {
     QDataStream in(socket);
     in.setVersion(QDataStream::Version::Qt_6_4);
     if(in.status() == QDataStream::Ok) {
-//        qDebug() << "read...";
-//        QString str;
-//        in >> str;
-//        qDebug() << str;
-//        SendToClient(str + str);
         for(;;) {
             if(nextBlockSize == 0) {
                 qDebug() << "nextBlockSize = 0";
@@ -59,14 +78,25 @@ void Server::slotReadyRead() {
             QString str;
             in >> str;
             nextBlockSize = 0;
-            ui->textBrowser->append(str);
-            qDebug() << str;
-            SendToClient(str + str);
+            QString socketAddress;
+            socketAddress = socket->peerAddress().toString().replace("::ffff:", "");
+            writeMessage("Сообщение от " + socketAddress + ": " +  str);
+            QString outputMessage = str + str;
+            SendToClient(outputMessage);
+            writeMessage("Ответ сервера для " + socketAddress + ": " +  outputMessage);
             break;
         }
     }
     else {
         qDebug() << "DataStream error";
+    }
+}
+
+void Server::updateListView() {
+    ui->textBrowser_2->clear();
+    for(int i = 0; i < sockets.count(); i++) {
+        QString str = socket->peerAddress().toString().replace("::ffff:", "");
+        ui->textBrowser_2->append(str + "\n");
     }
 }
 

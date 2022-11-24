@@ -22,10 +22,12 @@ private:
     void SendToClient(QString str);
     qint16 nextBlockSize;
     void writeMessage(QString str);
+    void updateListView();
 
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();
+    void disconnected();
 };
 
 #endif // SERVER_H

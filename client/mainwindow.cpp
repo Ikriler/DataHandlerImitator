@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     socket = new QTcpSocket(this);
     connect(socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
     connect(socket, &QTcpSocket::connected, this, &MainWindow::hostFoundMessage);
+    connect(socket, &QTcpSocket::disconnected, this, &MainWindow::disconnectMessage);
     nextBlockSize = 0;
 }
 
@@ -56,19 +57,21 @@ void MainWindow::SendToServer(QString str)
     ui->lineEdit->clear();
 }
 
-void MainWindow::disconnect() {
+void MainWindow::disconnectMessage() {
     QString ipAddress = ui->lineEdit_2->text();
     QString port = ui->lineEdit_3->text();
 
     ui->lineEdit_2->setEnabled(true);
     ui->lineEdit_3->setEnabled(true);
 
-    socket->disconnectFromHost();
     writeMessage("Отключение от " + ipAddress + ":" + port);
 
     ui->pushButton->setEnabled(true);
     ui->pushButton_3->setEnabled(false);
+}
 
+void MainWindow::disconnect() {
+    socket->disconnectFromHost();
 }
 
 void MainWindow::slotReadyRead()
