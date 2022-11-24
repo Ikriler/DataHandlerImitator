@@ -11,8 +11,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     socket = new QTcpSocket(this);
     connect(socket, &QTcpSocket::readyRead, this, &MainWindow::slotReadyRead);
-    connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+    connect(socket, &QTcpSocket::connected, this, &MainWindow::hostFoundMessage);
     nextBlockSize = 0;
+}
+
+void MainWindow::writeMessage(QString str) {
+    QDateTime dateTime = QDateTime::currentDateTime();
+    ui->textBrowser->append(dateTime.toString(Qt::ISODate).replace("T", " ") + " " + str + "\n");
+}
+
+void MainWindow::hostFoundMessage() {
+    writeMessage("Успешно подключено!");
 }
 
 MainWindow::~MainWindow()
@@ -20,32 +29,46 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::on_pushButton_clicked()
 {
-
     QString ipAddress = ui->lineEdit_2->text();
     QString port = ui->lineEdit_3->text();
 
+    ui->lineEdit_2->setEnabled(false);
+    ui->lineEdit_3->setEnabled(false);
+
+    writeMessage("Подключение к " + ipAddress + ":" + port);
+
     socket->connectToHost(ipAddress, port.toInt());
-//    if(socket->state() == QTcpSocket::ConnectedState) {
-//        ui->textBrowser->append("connected success " + ipAddress + " " + port);
-//    }
-//    else {
-//        ui->textBrowser->append("connected error " + ipAddress + " " + port);
-//    }
+
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_3->setEnabled(true);
 }
 
 void MainWindow::SendToServer(QString str)
 {
     data.clear();
     QDataStream out(&data, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Version::Qt_6_4);
-    out << qint16(0) << str;
+    out << quint16(0) << str;
     out.device()->seek(0);
     out << quint16(data.size() - sizeof(quint16));
     socket->write(data);
     ui->lineEdit->clear();
+}
+
+void MainWindow::disconnect() {
+    QString ipAddress = ui->lineEdit_2->text();
+    QString port = ui->lineEdit_3->text();
+
+    ui->lineEdit_2->setEnabled(true);
+    ui->lineEdit_3->setEnabled(true);
+
+    socket->disconnectFromHost();
+    writeMessage("Отключение от " + ipAddress + ":" + port);
+
+    ui->pushButton->setEnabled(true);
+    ui->pushButton_3->setEnabled(false);
+
 }
 
 void MainWindow::slotReadyRead()
@@ -66,18 +89,25 @@ void MainWindow::slotReadyRead()
             QString str;
             in >> str;
             nextBlockSize = 0;
-            ui->textBrowser->append(str);
+            writeMessage("Ответ сервера: " + str);
             break;
         }
     }
     else {
-        ui->textBrowser->append("read error");
+        writeMessage("Ошибка чтения");
     }
 }
 
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    SendToServer(ui->lineEdit->text());
+    QString sendMessage = ui->lineEdit->text();
+    writeMessage("Отправленное сообщение: " + sendMessage);
+    SendToServer(sendMessage);
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    MainWindow::disconnect();
 }
 

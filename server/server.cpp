@@ -23,8 +23,13 @@ void Server::incomingConnection(qintptr socketDescriptor) {
 
     QString str;
 
-    str = socket->peerAddress().toString();
+    str = socket->peerName();
     ui->textBrowser->append(str + " connected");
+}
+
+void Server::writeMessage(QString str) {
+    QDateTime dateTime = QDateTime::currentDateTime();
+    ui->textBrowser->append(dateTime.toString(Qt::ISODate).replace("T", " ") + " " + str + "\n");
 }
 
 void Server::slotReadyRead() {

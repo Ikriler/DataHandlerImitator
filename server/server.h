@@ -5,6 +5,7 @@
 #include <QVector>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QDateTime>
 
 class Server : public QTcpServer
 {
@@ -20,6 +21,8 @@ private:
     QByteArray data;
     void SendToClient(QString str);
     qint16 nextBlockSize;
+    void writeMessage(QString str);
+
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();
