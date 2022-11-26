@@ -16,10 +16,15 @@ public:
     ~MainWindow();
     Ui::MainWindow *ui;
     void writeMessage(QString str);
+    void updateWhiteListIP();
+    void initWhiteListIP();
+    void initPathToLog();
 
-private slots:
+public slots:
 
     void on_pushButton_4_clicked();
     void on_pushButton_5_clicked();
+private slots:
+    void on_pushButton_clicked();
 };
 #endif // MAINWINDOW_H

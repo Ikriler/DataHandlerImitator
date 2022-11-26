@@ -1,5 +1,6 @@
 #include "server.h"
 #include "ui_mainwindow.h"
+#include <QFile>
 
 Server::Server(Ui::MainWindow *ui)
 {
@@ -30,7 +31,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
 
     if(!texts.contains(str)) {
         writeMessage("Попытка подключения неизвестного устройства: " + str);
-        socket->disconnect();
+        socket->disconnectFromHost();
         return;
     }
 
@@ -38,6 +39,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
 
     writeMessage(str + " подключён");
     updateListView();
+
 }
 
 void Server::disconnected() {
@@ -52,8 +54,19 @@ void Server::disconnected() {
 
 
 void Server::writeMessage(QString str) {
+    QString pathToLog = ui->lineEdit_2->text();
+
     QDateTime dateTime = QDateTime::currentDateTime();
-    ui->textBrowser->append(dateTime.toString(Qt::ISODate).replace("T", " ") + " " + str + "\n");
+    QString message = dateTime.toString(Qt::ISODate).replace("T", " ") + " " + str + "\n";
+    ui->textBrowser->append(message);
+
+    if(pathToLog != "") {
+        QFile logFile(pathToLog + "/" + dateTime.toString(Qt::ISODate).split("T")[0] + ".txt");
+        logFile.open(QFile::WriteOnly | QIODevice::Append);
+        logFile.write(message.toUtf8());
+        logFile.write("\n");
+        logFile.close();
+    }
 }
 
 void Server::slotReadyRead() {
@@ -81,6 +94,9 @@ void Server::slotReadyRead() {
             QString socketAddress;
             socketAddress = socket->peerAddress().toString().replace("::ffff:", "");
             writeMessage("Сообщение от " + socketAddress + ": " +  str);
+
+
+
             QString outputMessage = str + str;
             SendToClient(outputMessage);
             writeMessage("Ответ сервера для " + socketAddress + ": " +  outputMessage);

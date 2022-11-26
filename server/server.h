@@ -3,7 +3,6 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QVector>
-#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDateTime>
 

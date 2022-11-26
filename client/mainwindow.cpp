@@ -22,6 +22,13 @@ void MainWindow::writeMessage(QString str) {
 }
 
 void MainWindow::hostFoundMessage() {
+
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_3->setEnabled(true);
+
+    ui->lineEdit_2->setEnabled(false);
+    ui->lineEdit_3->setEnabled(false);
+
     writeMessage("Успешно подключено!");
 }
 
@@ -35,15 +42,11 @@ void MainWindow::on_pushButton_clicked()
     QString ipAddress = ui->lineEdit_2->text();
     QString port = ui->lineEdit_3->text();
 
-    ui->lineEdit_2->setEnabled(false);
-    ui->lineEdit_3->setEnabled(false);
 
     writeMessage("Подключение к " + ipAddress + ":" + port);
 
     socket->connectToHost(ipAddress, port.toInt());
 
-    ui->pushButton->setEnabled(false);
-    ui->pushButton_3->setEnabled(true);
 }
 
 void MainWindow::SendToServer(QString str)

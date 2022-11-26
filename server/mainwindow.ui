@@ -27,9 +27,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_3">
-          <property name="text">
-           <string>Открыть папку</string>
+         <widget class="QLineEdit" name="lineEdit_2">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
