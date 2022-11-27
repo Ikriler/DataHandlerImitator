@@ -53,7 +53,13 @@ void MainWindow::SendToServer(QString str)
 {
     data.clear();
     QDataStream out(&data, QIODevice::WriteOnly);
-    out << quint16(0) << str;
+    out << quint16(0);
+
+
+    foreach(QChar c, str) {
+        out << c;
+    }
+
     out.device()->seek(0);
     out << quint16(data.size() - sizeof(quint16));
     socket->write(data);

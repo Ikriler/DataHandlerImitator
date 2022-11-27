@@ -12,7 +12,6 @@ Server::Server(Ui::MainWindow *ui)
     }
     nextBlockSize = 0;
     this->ui = ui;
-    //connect(ui->listWidget, &QListWidget::currentRowChanged, this, &Server::reconnectDevices);
 }
 
 void Server::reconnectDevices() {
@@ -90,6 +89,8 @@ void Server::slotReadyRead() {
     socket = (QTcpSocket*)sender();
     QDataStream in(socket);
     in.setVersion(QDataStream::Version::Qt_6_4);
+    QString socketAddress;
+    socketAddress = socket->peerAddress().toString().replace("::ffff:", "");
     if(in.status() == QDataStream::Ok) {
         for(;;) {
             if(nextBlockSize == 0) {
@@ -102,19 +103,38 @@ void Server::slotReadyRead() {
                 qDebug() << "nextBlockSize = " << nextBlockSize;
             }
             if(socket->bytesAvailable() < nextBlockSize) {
-                qDebug() << "data not full, break";
+                writeMessage("Сообщение от " + socketAddress + " было доставлено не полностью");
                 break;
             }
-            QString str;
-            in >> str;
+
+            QString str = "";
+
+            QList<QChar> charsList;
+
+            for(;!in.atEnd();) {
+                QChar inChar;
+                in >> inChar;
+                charsList.append(inChar);
+                str += inChar;
+            }
+
             nextBlockSize = 0;
-            QString socketAddress;
-            socketAddress = socket->peerAddress().toString().replace("::ffff:", "");
             writeMessage("Сообщение от " + socketAddress + ": " +  str);
 
+            str = "";
 
+            str += "[" + QString::number(charsList.count()) + "] {";
 
-            QString outputMessage = str + str;
+            for(int i = 0; i < charsList.count(); i++) {
+                str += QString("\"") + charsList.at(i) + QString("\"");
+               if(i + 1 != charsList.count()) {
+                   str += ",";
+               }
+            }
+
+            str += "}";
+
+            QString outputMessage = str;
             SendToClient(outputMessage);
             writeMessage("Ответ сервера для " + socketAddress + ": " +  outputMessage);
             break;
