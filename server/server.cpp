@@ -12,7 +12,24 @@ Server::Server(Ui::MainWindow *ui)
     }
     nextBlockSize = 0;
     this->ui = ui;
+    //connect(ui->listWidget, &QListWidget::currentRowChanged, this, &Server::reconnectDevices);
+}
 
+void Server::reconnectDevices() {
+    QList<QListWidgetItem *> items = ui->listWidget->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard);
+    QList<QString> texts;
+    foreach(QListWidgetItem *item, items)
+      texts.append(item->text());
+
+    foreach(QTcpSocket *curSock, sockets) {
+        QString curIP = curSock->peerAddress().toString().replace("::ffff:", "");
+        qDebug() << curIP;
+        qDebug() << texts.size();
+        if(!texts.contains(curIP)) {
+            qDebug() << curIP + " disconnected";
+            curSock->disconnectFromHost();
+        }
+    }
 }
 
 void Server::incomingConnection(qintptr socketDescriptor) {

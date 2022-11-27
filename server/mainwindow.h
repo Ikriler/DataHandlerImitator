@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "server.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,12 +20,11 @@ public:
     void updateWhiteListIP();
     void initWhiteListIP();
     void initPathToLog();
+    Server *server;
 
-public slots:
-
+private slots:
     void on_pushButton_4_clicked();
     void on_pushButton_5_clicked();
-private slots:
     void on_pushButton_clicked();
 };
 #endif // MAINWINDOW_H

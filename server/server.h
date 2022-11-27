@@ -14,6 +14,7 @@ public:
     Server(Ui::MainWindow *ui);
     QTcpSocket *socket;
     Ui::MainWindow *ui;
+    void reconnectDevices();
 
 private:
     QVector<QTcpSocket*> sockets;

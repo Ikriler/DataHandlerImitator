@@ -82,6 +82,9 @@ void MainWindow::on_pushButton_5_clicked()
         delete ui->listWidget->takeItem(ui->listWidget->row(item));
     }
     updateWhiteListIP();
+    if(server != nullptr) {
+         server->reconnectDevices();
+    }
 }
 
 
@@ -114,8 +117,6 @@ void MainWindow::on_pushButton_clicked()
 {
     QString directoryForLog = QFileDialog::getExistingDirectory();
 
-  //  QDateTime dateTime = QDateTime::currentDateTime();
-//directoryForLog + dateTime.toString(Qt::ISODate).split("T")[0];
     QFile file("pathToLog.txt");
 
     file.flush();

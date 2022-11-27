@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
     Server s(w.ui);
 
-
+    w.server = &s;
 
     return a.exec();
 }
